@@ -20,7 +20,7 @@ Pipeline analisis sekuens DNA berbasis Python untuk gen **rbcL** (*ribulose-1,5-
 ## 🗂️ Struktur Repository
 
 ```
-rbcl-pipeline/
+rbcl-seq-analysis/
 ├── data/
    ├── sequence_rbcl.fasta    
 ├── output/
@@ -45,7 +45,7 @@ rbcl-pipeline/
 
 ```bash
 # Clone repo
-git clone https://github.com/username/rbcl-pipeline.git
+git clone https://github.com/mariormdhn/rbcl-seq-analysis.git
 cd rbcl-pipeline
 
 # Install dependensi
@@ -68,7 +68,7 @@ pip install biopython pandas matplotlib seaborn
 
 ```bash
 # Jalankan dengan file default (sequence_rbcl.fasta)
-python pipeline_advanced.py
+python pipeline_fix.py
 
 # Tentukan file FASTA sendiri
 python pipeline_advanced.py --fasta data/sekuens_saya.fasta
@@ -90,7 +90,7 @@ python pipeline_advanced.py --no-heatmap
 
 ### Dashboard HTML
 
-Buka file `dashboard.html` di browser (Chrome/Firefox/Edge), lalu:
+Buka file `index.html` di browser (Chrome/Firefox/Edge), lalu:
 
 1. **Drop atau klik** untuk upload file FASTA
 2. Tab **GC Analysis** — lihat statistik dan bar chart
@@ -174,13 +174,7 @@ Metode ini cocok untuk sekuens dengan panjang serupa (seperti rbcL ~1.4 kb). Unt
 
 ---
 
-## 📄 Laporan
-
-Laporan ringkas tersedia di [`laporan_mini_project_rbcl.pdf`](laporan_mini_project_rbcl.pdf), mencakup pendahuluan, tujuan, metodologi, dan kesimpulan analisis.
-
----
-
 ## 👤 Author
 
-**Mario** — Mahasiswa Bioinformatika, IPB University  
-Mini Project — Eksplorasi & Visualisasi Data (BIF) · 2026
+**Mario Ilham Ramadhan / G0401241028** — Mahasiswa Bioinformatika, IPB University  
+Mini Project — Struktur Data Bioinformatika (BIF) · 2026
