@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  /* === PALETTE ===
+     --bg:        #F7F9FC  (off-white page)
+     --surface:   #FFFFFF  (card surface)
+     --border:    #E2E8F0  (subtle border)
+     --blue-pri:  #2563EB  (primary action, accent)
+     --blue-mid:  #3B82F6  (hover / mid-tone)
+     --blue-light:#EFF6FF  (tinted bg)
+     --blue-muted:#DBEAFE  (chip active, badge bg)
+     --text-pri:  #0F172A  (headings)
+     --text-sec:  #64748B  (labels, meta)
+     --text-mute: #94A3B8  (placeholders, empty)
+  */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #F7F9FC; color: #0F172A; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .header {
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  }
+  .header-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg,#2563EB,#3B82F6);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(37,99,235,.25);
+  }
+  .header h1 { font-size: 14px; font-weight: 600; color: #0F172A; letter-spacing: -0.01em; }
+  .header .subtitle { font-size: 11px; color: #64748B; margin-top: 1px; }
+  .file-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #EFF6FF; color: #2563EB;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    padding: 3px 9px; border-radius: 20px;
+    border: 1px solid #BFDBFE; margin-left: 4px;
+  }
+  .dot-live { width: 5px; height: 5px; border-radius: 50%; background: #2563EB; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex; background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    padding: 0 20px; overflow-x: auto;
+  }
+  .tab {
+    padding: 11px 16px; font-size: 12px; font-weight: 500;
+    color: #64748B; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap; transition: all 0.15s;
+  }
+  .tab:hover { color: #2563EB; }
+  .tab.active { color: #2563EB; border-bottom-color: #2563EB; }
+
+  /* ── MAIN ── */
+  .main { padding: 16px 20px; }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone {
+    border: 1.5px dashed #BFDBFE; border-radius: 14px;
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: #FFFFFF;
+    margin-bottom: 16px; position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: #2563EB; background: #EFF6FF;
+  }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-zone strong { color: #0F172A; font-size: 14px; font-weight: 600; }
+  .upload-zone p { font-size: 12px; color: #64748B; margin-top: 4px; }
+  .badge-fasta {
+    display: inline-block;
+    background: #EFF6FF; color: #2563EB;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    padding: 2px 8px; border-radius: 4px;
+    border: 1px solid #BFDBFE; margin-top: 6px;
+  }
+
+  /* ── PANEL ── */
+  .panel {
+    background: #FFFFFF; border: 1px solid #E2E8F0;
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  }
+  .panel-title {
+    font-size: 10px; color: #64748B; text-transform: uppercase;
+    letter-spacing: 0.8px; font-weight: 600;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+  }
+  .panel-title::before {
+    content: ''; display: inline-block;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #2563EB;
+  }
+
+  /* ── STAT CARDS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .stat-card {
+    background: #FFFFFF; border: 1px solid #E2E8F0;
+    border-radius: 10px; padding: 12px 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.03);
+  }
+  .stat-label {
+    font-size: 10px; color: #94A3B8; text-transform: uppercase;
+    letter-spacing: 0.8px; font-weight: 500; margin-bottom: 5px;
+  }
+  .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: #2563EB; }
+  .stat-value.blue { color: #0EA5E9; }
+  .stat-value.amber { color: #F59E0B; }
+
+  /* ── TOP 3 ── */
+  .top3-card { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F1F5F9; }
+  .top3-card:last-child { border-bottom: none; }
+  .rank { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; width: 24px; text-align: center; flex-shrink: 0; }
+  .rank-1 { color: #F59E0B; } .rank-2 { color: #94A3B8; } .rank-3 { color: #A78BFA; }
+  .top3-info { flex: 1; min-width: 0; }
+  .top3-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #2563EB; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  .gc-bar-track { height: 4px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
+  .gc-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg,#3B82F6,#2563EB); width: 0%; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .top3-gc { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #2563EB; flex-shrink: 0; min-width: 48px; text-align: right; }
+
+  /* ── CHART ── */
+  .chart-wrapper { position: relative; width: 100%; }
+  canvas { display: block; }
+
+  /* ── BUTTONS ── */
+  .action-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    padding: 7px 14px; border-radius: 8px; font-size: 12px;
+    font-weight: 500; cursor: pointer;
+    border: 1px solid #E2E8F0; background: #FFFFFF; color: #475569;
+    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+  }
+  .btn:hover { background: #F8FAFC; border-color: #CBD5E1; color: #0F172A; }
+  .btn.primary { background: #2563EB; border-color: #2563EB; color: #FFFFFF; }
+  .btn.primary:hover { background: #1D4ED8; border-color: #1D4ED8; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── HEATMAP ── */
+  .heatmap-container { overflow: auto; }
+  .heatmap-table { border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .heatmap-table th { background: #F8FAFC; color: #64748B; padding: 4px 6px; text-align: center; font-weight: 500; white-space: nowrap; max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+  .heatmap-table td { width: 36px; height: 28px; text-align: center; font-size: 9px; font-weight: 600; cursor: default; transition: opacity 0.1s; border: 1px solid #F7F9FC; }
+  .heatmap-table td:hover { outline: 1.5px solid #2563EB; }
+  .heatmap-legend { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 11px; color: #64748B; font-family: 'JetBrains Mono', monospace; }
+  .legend-bar { height: 8px; width: 140px; border-radius: 3px; }
+
+  /* ── MOTIF ── */
+  .motif-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-end; }
+  .motif-controls label { font-size: 11px; color: #64748B; font-weight: 500; display: block; margin-bottom: 4px; }
+  .motif-input {
+    background: #F8FAFC; border: 1px solid #E2E8F0;
+    border-radius: 6px; color: #0F172A;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    padding: 6px 10px; width: 200px;
+  }
+  .motif-input:focus { outline: none; border-color: #2563EB; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+  .motif-input::placeholder { color: #CBD5E1; }
+  select.motif-input { cursor: pointer; }
+
+  .preset-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chip {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    padding: 3px 8px; border-radius: 4px;
+    background: #F8FAFC; border: 1px solid #E2E8F0;
+    color: #64748B; cursor: pointer; transition: all 0.15s; font-weight: 500;
+  }
+  .chip:hover { border-color: #93C5FD; color: #2563EB; background: #EFF6FF; }
+  .chip.active { border-color: #2563EB; color: #2563EB; background: #DBEAFE; }
+
+  .motif-results { max-height: 320px; overflow-y: auto; }
+  .motif-result-row { padding: 8px 10px; border-bottom: 1px solid #F1F5F9; display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; }
+  .motif-result-row:last-child { border-bottom: none; }
+  .motif-seq-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #2563EB; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .motif-count-badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; background: #DBEAFE; color: #2563EB; border: 1px solid #BFDBFE; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+  .motif-positions { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+  .motif-summary-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 8px 12px; background: #EFF6FF; border-radius: 8px; border: 1px solid #BFDBFE; }
+  .motif-summary-bar span { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .motif-total { color: #2563EB; font-weight: 700; }
+  .motif-label { color: #64748B; }
+
+  /* ── TABS CONTENT ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── NUCLEOTIDE ── */
+  .nuc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .nuc-item { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; }
+  .nuc-label { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; }
+  .nuc-A { color: #059669; } .nuc-T { color: #EF4444; } .nuc-G { color: #2563EB; } .nuc-C { color: #D97706; }
+  .nuc-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748B; }
+
+  /* ── MISC ── */
+  .panel-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .no-data { text-align: center; padding: 24px; color: #CBD5E1; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+
+  .tooltip-box {
+    position: fixed; background: #1E293B; border: 1px solid #334155;
+    border-radius: 8px; padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #F1F5F9; pointer-events: none; z-index: 999; display: none; max-width: 220px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🧬</div>
+  <div>
+    <h1>rbcL Sequence Analysis Pipeline</h1>
+    <div class="subtitle">GC content · pairwise similarity · motif search</div>
+  </div>
+  <div id="fileBadge" style="display:none;" class="file-badge">
+    <div class="dot-live"></div>
+    <span id="fileBadgeText">—</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="gc">📊 GC Analysis</div>
+  <div class="tab" data-tab="heatmap">🔥 Similarity Heatmap</div>
+  <div class="tab" data-tab="motif">🔍 Motif Finder</div>
+</div>
+
+<div class="main">
+
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" accept=".fasta,.fa,.fna" id="fastaInput">
+    <div style="font-size:26px; margin-bottom:6px;">📁</div>
+    <strong>Drop FASTA file here or click to browse</strong>
+    <p>Multiple sequences supported</p>
+    <span class="badge-fasta">.fasta / .fa / .fna</span>
+  </div>
+
+  <div id="allTabs" style="display:none;">
+
+    <div class="tab-content active" id="tab-gc">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">total sequences</div><div class="stat-value blue" id="statTotal">—</div></div>
+        <div class="stat-card"><div class="stat-label">avg gc content</div><div class="stat-value" id="statAvgGC">—</div></div>
+        <div class="stat-card"><div class="stat-label">avg length (bp)</div><div class="stat-value amber" id="statAvgLen">—</div></div>
+      </div>
+      <div class="panel-2col">
+        <div class="panel">
+          <div class="panel-title">top 3 highest gc</div>
+          <div id="top3Container"><div class="no-data">—</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">nucleotide totals</div>
+          <div class="nuc-grid">
+            <div class="nuc-item"><span class="nuc-label nuc-A">A</span><span class="nuc-val" id="nA">—</span></div>
+            <div class="nuc-item"><span class="nuc-label nuc-T">T</span><span class="nuc-val" id="nT">—</span></div>
+            <div class="nuc-item"><span class="nuc-label nuc-G">G</span><span class="nuc-val" id="nG">—</span></div>
+            <div class="nuc-item"><span class="nuc-label nuc-C">C</span><span class="nuc-val" id="nC">—</span></div>
+          </div>
+          <div style="margin-top:10px; padding-top:10px; border-top:1px solid #E2E8F0;">
+            <div class="panel-title" style="margin-bottom:6px;">gc ratio</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="flex:1;height:7px;background:#E2E8F0;border-radius:4px;overflow:hidden;">
+                <div id="gcRatioBar" style="height:100%;background:linear-gradient(90deg,#3B82F6,#2563EB);border-radius:4px;width:0%;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+              </div>
+              <span id="gcRatioVal" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#2563EB;min-width:38px;text-align:right;">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">gc content per sequence — sorted descending</div>
+        <div class="chart-wrapper" id="chartWrapper" style="height:200px;">
+          <canvas id="gcChart" role="img" aria-label="Bar chart GC content per sequence"></canvas>
+        </div>
+      </div>
+      <div class="action-bar">
+        <button class="btn primary" id="btnCSV">⬇ download CSV</button>
+        <button class="btn" id="btnReset">↺ reset</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-heatmap">
+      <div class="panel">
+        <div class="panel-title">pairwise sequence identity (%)</div>
+        <p style="font-size:11px;color:#94A3B8;margin-bottom:12px;">Identity dihitung dengan menghitung posisi yang identik dibagi panjang alignment (global alignment sederhana — cocok untuk sekuens serupa seperti rbcL).</p>
+        <div id="heatmapWarning" style="display:none; background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:10px 12px; font-size:11px; color:#92400E; font-family:'JetBrains Mono',monospace; margin-bottom:10px;">
+          ⚠ Lebih dari 20 sekuens — hanya menampilkan 20 pertama agar heatmap tetap terbaca.
+        </div>
+        <div class="heatmap-container" id="heatmapContainer">
+          <div class="no-data">Upload file FASTA terlebih dahulu</div>
+        </div>
+        <div class="heatmap-legend" id="heatmapLegend" style="display:none;">
+          <span>0%</span>
+          <div class="legend-bar" style="background:linear-gradient(90deg,#EFF6FF,#BFDBFE,#2563EB);"></div>
+          <span>100%</span>
+          <span style="margin-left:12px; color:#CBD5E1;">· hover cell untuk detail</span>
+        </div>
+      </div>
+      <div class="action-bar">
+        <button class="btn primary" id="btnHeatmapCSV">⬇ export similarity matrix</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-motif">
+      <div class="panel">
+        <div class="panel-title">motif & restriction site search</div>
+        <div class="preset-chips" id="presetChips">
+          <span class="chip" data-motif="GAATTC" title="EcoRI">EcoRI (GAATTC)</span>
+          <span class="chip" data-motif="AAGCTT" title="HindIII">HindIII (AAGCTT)</span>
+          <span class="chip" data-motif="GGATCC" title="BamHI">BamHI (GGATCC)</span>
+          <span class="chip" data-motif="CCCGGG" title="SmaI">SmaI (CCCGGG)</span>
+          <span class="chip" data-motif="CTCGAG" title="XhoI">XhoI (CTCGAG)</span>
+          <span class="chip" data-motif="GCATGC" title="SphI">SphI (GCATGC)</span>
+          <span class="chip" data-motif="GGCC" title="palindrome 4bp">GGCC palindrome</span>
+          <span class="chip" data-motif="TATAAA" title="TATA box">TATA box</span>
+          <span class="chip" data-motif="AAATTT" title="AT-rich">AT-rich motif</span>
+        </div>
+        <div class="motif-controls">
+          <div>
+            <label>custom motif (IUPAC ok)</label>
+            <input type="text" class="motif-input" id="motifInput" placeholder="e.g. GAATTC" maxlength="40" style="text-transform:uppercase;">
+          </div>
+          <div>
+            <label>strand</label>
+            <select class="motif-input" id="strandSelect" style="width:130px;">
+              <option value="both">both strands</option>
+              <option value="forward">forward only</option>
+            </select>
+          </div>
+          <button class="btn primary" id="btnSearch">🔍 search</button>
+        </div>
+        <div id="motifResults"><div class="no-data">Pilih preset atau ketik motif, lalu klik search</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="tooltip-box" id="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let allData = [];
+let rawRecords = [];
+let simMatrix = [];
+let chartInstance = null;
+
+// IUPAC ambiguity map to regex
+const IUPAC = {
+  A:'A',T:'T',G:'G',C:'C',U:'T',
+  R:'[AG]',Y:'[CT]',S:'[GC]',W:'[AT]',
+  K:'[GT]',M:'[AC]',B:'[CGT]',D:'[AGT]',
+  H:'[ACT]',V:'[ACG]',N:'[ACGT]'
+};
+
+function iupacToRegex(motif) {
+  return motif.toUpperCase().split('').map(c => IUPAC[c] || c).join('');
+}
+
+function reverseComplement(seq) {
+  const comp = {A:'T',T:'A',G:'C',C:'G',N:'N'};
+  return seq.split('').reverse().map(c => comp[c] || c).join('');
+}
+
+function parseFasta(text) {
+  const lines = text.split(/\r?\n/);
+  const records = [];
+  let current = null;
+  for (const line of lines) {
+    if (line.startsWith('>')) {
+      if (current) records.push(current);
+      current = { id: line.slice(1).trim().split(/\s+/)[0], seq: '' };
+    } else if (current) {
+      current.seq += line.trim().toUpperCase();
+    }
+  }
+  if (current) records.push(current);
+  return records;
+}
+
+function analyzeRecords(records) {
+  return records.map(r => {
+    const seq = r.seq;
+    const len = seq.length;
+    const A = (seq.match(/A/g)||[]).length;
+    const T = (seq.match(/T/g)||[]).length;
+    const G = (seq.match(/G/g)||[]).length;
+    const C = (seq.match(/C/g)||[]).length;
+    const gc = len > 0 ? ((G+C)/len*100) : 0;
+    return { id: r.id, seq, length: len, A, T, G, C, gc: parseFloat(gc.toFixed(2)) };
+  }).sort((a,b) => b.gc - a.gc);
+}
+
+// Simple pairwise identity: count matching chars at each position / min length
+function pairwiseIdentity(seqA, seqB) {
+  const len = Math.min(seqA.length, seqB.length);
+  if (len === 0) return 0;
+  let matches = 0;
+  for (let i = 0; i < len; i++) if (seqA[i] === seqB[i]) matches++;
+  return parseFloat((matches / len * 100).toFixed(1));
+}
+
+function gcColor(v) {
+  // 0 = very light blue, 100 = deep blue
+  const t = v / 100;
+  const r = Math.round(239 + t * (37 - 239));
+  const g = Math.round(246 + t * (99 - 246));
+  const b = Math.round(255 + t * (235 - 255));
+  return `rgb(${r},${g},${b})`;
+}
+
+function simColor(v) {
+  if (v >= 99.9) return '#2563EB';
+  const t = v / 100;
+  const r = Math.round(247 + t * (37 - 247));
+  const g = Math.round(249 + t * (99 - 249));
+  const b = Math.round(252 + t * (235 - 252));
+  return `rgb(${r},${g},${b})`;
+}
+
+function textContrast(r,g,b) {
+  const lum = 0.299*r + 0.587*g + 0.114*b;
+  return lum > 160 ? '#1E3A5F' : '#FFFFFF';
+}
+
+function colorToRGB(cssColor) {
+  const m = cssColor.match(/rgb\((\d+),(\d+),(\d+)\)/);
+  return m ? [+m[1],+m[2],+m[3]] : [13,17,23];
+}
+
+function renderGC(data) {
+  const total = data.length;
+  const avgGC = data.reduce((s,d)=>s+d.gc,0)/total;
+  const avgLen = Math.round(data.reduce((s,d)=>s+d.length,0)/total);
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statAvgGC').textContent = avgGC.toFixed(2)+'%';
+  document.getElementById('statAvgLen').textContent = avgLen.toLocaleString();
+
+  const tA = data.reduce((s,d)=>s+d.A,0);
+  const tT = data.reduce((s,d)=>s+d.T,0);
+  const tG = data.reduce((s,d)=>s+d.G,0);
+  const tC = data.reduce((s,d)=>s+d.C,0);
+  const tB = tA+tT+tG+tC;
+  const pct = n => tB ? ((n/tB)*100).toFixed(1)+'%' : '—';
+  document.getElementById('nA').textContent = tA.toLocaleString()+' ('+pct(tA)+')';
+  document.getElementById('nT').textContent = tT.toLocaleString()+' ('+pct(tT)+')';
+  document.getElementById('nG').textContent = tG.toLocaleString()+' ('+pct(tG)+')';
+  document.getElementById('nC').textContent = tC.toLocaleString()+' ('+pct(tC)+')';
+  const gcPct = tB ? ((tG+tC)/tB*100) : 0;
+  document.getElementById('gcRatioVal').textContent = gcPct.toFixed(1)+'%';
+  setTimeout(()=>{ document.getElementById('gcRatioBar').style.width = gcPct.toFixed(1)+'%'; },100);
+
+  const top3 = data.slice(0,3);
+  const medals = ['rank-1','rank-2','rank-3'], syms = ['#1','#2','#3'];
+  document.getElementById('top3Container').innerHTML = top3.map((d,i)=>`
+    <div class="top3-card">
+      <div class="rank ${medals[i]}">${syms[i]}</div>
+      <div class="top3-info">
+        <div class="top3-id">${d.id}</div>
+        <div class="gc-bar-track"><div class="gc-bar-fill" data-pct="${d.gc}" style="width:0%"></div></div>
+      </div>
+      <div class="top3-gc">${d.gc}%</div>
+    </div>`).join('');
+  setTimeout(()=>{ document.querySelectorAll('.gc-bar-fill').forEach(el=>{ el.style.width=el.dataset.pct+'%'; }); },150);
+
+  const labels = data.map(d => d.id.length>16 ? d.id.slice(0,16)+'…' : d.id);
+  const values = data.map(d => d.gc);
+  const bgColors = values.map(v => v>=50?'#2563EB':v>=40?'#3B82F6':'#93C5FD');
+  const n = data.length;
+  const chartH = Math.max(180, n*26+60);
+  document.getElementById('chartWrapper').style.height = chartH+'px';
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+  const canvas = document.getElementById('gcChart');
+  canvas.width = 0; canvas.height = 0;
+  chartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: { labels, datasets: [{ label:'GC Content (%)', data:values, backgroundColor:bgColors, borderRadius:4, borderSkipped:false }] },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1E293B', borderColor:'#334155', borderWidth:1,
+          titleColor:'#93C5FD', bodyColor:'#F1F5F9',
+          titleFont:{family:'JetBrains Mono',size:11}, bodyFont:{family:'JetBrains Mono',size:11},
+          callbacks:{
+            title:(items)=>data[items[0].dataIndex].id,
+            label:(item)=>[' GC: '+item.raw.toFixed(2)+'%',' Length: '+data[item.dataIndex].length.toLocaleString()+' bp']
+          }
+        }
+      },
+      scales:{
+        x:{ min:0, max:100, grid:{color:'#E2E8F0'}, ticks:{color:'#94A3B8',font:{family:'JetBrains Mono',size:9},callback:v=>v+'%'}, border:{color:'#E2E8F0'} },
+        y:{ grid:{display:false}, ticks:{color:'#2563EB',font:{family:'JetBrains Mono',size:9},autoSkip:false}, border:{color:'#E2E8F0'} }
+      }
+    }
+  });
+}
+
+function renderHeatmap(data) {
+  const maxN = 20;
+  const subset = data.length > maxN ? data.slice(0, maxN) : data;
+  document.getElementById('heatmapWarning').style.display = data.length > maxN ? 'block' : 'none';
+
+  const n = subset.length;
+  simMatrix = [];
+  for (let i=0;i<n;i++) {
+    simMatrix[i] = [];
+    for (let j=0;j<n;j++) {
+      simMatrix[i][j] = i===j ? 100.0 : pairwiseIdentity(subset[i].seq, subset[j].seq);
+    }
+  }
+
+  const shortId = id => id.length>10 ? id.slice(0,10)+'…' : id;
+  let html = '<table class="heatmap-table"><thead><tr><th></th>';
+  subset.forEach(d => { html += `<th title="${d.id}">${shortId(d.id)}</th>`; });
+  html += '</tr></thead><tbody>';
+  for (let i=0;i<n;i++) {
+    html += `<tr><th style="text-align:right;padding-right:6px;" title="${subset[i].id}">${shortId(subset[i].id)}</th>`;
+    for (let j=0;j<n;j++) {
+      const v = simMatrix[i][j];
+      const bg = simColor(v);
+      const [r,g,b] = colorToRGB(bg);
+      const fg = textContrast(r,g,b);
+      html += `<td style="background:${bg};color:${fg};" data-i="${i}" data-j="${j}" data-v="${v}">${i===j?'—':v.toFixed(0)}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('heatmapContainer').innerHTML = html;
+  document.getElementById('heatmapLegend').style.display = 'flex';
+
+  const tooltip = document.getElementById('tooltip');
+  document.getElementById('heatmapContainer').addEventListener('mouseover', e => {
+    const td = e.target.closest('td[data-v]');
+    if (!td) { tooltip.style.display='none'; return; }
+    const i = +td.dataset.i, j = +td.dataset.j, v = +td.dataset.v;
+    if (i===j) { tooltip.style.display='none'; return; }
+    tooltip.innerHTML = `<b>${subset[i].id}</b><br>vs<br><b>${subset[j].id}</b><br><span style="color:#93C5FD;font-size:13px;font-weight:700;">${v.toFixed(1)}% identity</span>`;
+    tooltip.style.display = 'block';
+  });
+  document.getElementById('heatmapContainer').addEventListener('mousemove', e => {
+    tooltip.style.left = (e.clientX+14)+'px';
+    tooltip.style.top = (e.clientY-10)+'px';
+  });
+  document.getElementById('heatmapContainer').addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+}
+
+function searchMotif(motif, strand) {
+  if (!motif || !allData.length) return;
+  const regStr = iupacToRegex(motif);
+  let fwdRe, revRe;
+  try { fwdRe = new RegExp(regStr,'g'); } catch(e){ alert('Invalid motif pattern'); return; }
+  const rcMotif = reverseComplement(motif.toUpperCase().replace(/[^ACGTRYMKSWBDHVN]/g,'N'));
+  const rcRegStr = iupacToRegex(rcMotif);
+  try { revRe = new RegExp(rcRegStr,'g'); } catch(e){ revRe = null; }
+
+  let totalHits = 0;
+  const rows = allData.map(d => {
+    const seq = d.seq;
+    let positions = [];
+    let m;
+    fwdRe.lastIndex = 0;
+    while((m=fwdRe.exec(seq))!==null) { positions.push('+'+(m.index+1)); fwdRe.lastIndex = m.index+1; }
+    if (strand==='both' && revRe && rcMotif !== motif.toUpperCase()) {
+      revRe.lastIndex = 0;
+      while((m=revRe.exec(seq))!==null) { positions.push('-'+(m.index+1)); revRe.lastIndex = m.index+1; }
+    }
+    totalHits += positions.length;
+    return { id: d.id, count: positions.length, positions };
+  }).sort((a,b)=>b.count-a.count);
+
+  const found = rows.filter(r=>r.count>0);
+  let html = `<div class="motif-summary-bar">
+    <span class="motif-total">${totalHits} hits</span>
+    <span class="motif-label">motif <b style="color:#0F172A;">${motif.toUpperCase()}</b> ditemukan di <b style="color:#2563EB;">${found.length}</b>/<b style="color:#2563EB;">${allData.length}</b> sekuens</span>
+  </div>`;
+  if (found.length === 0) {
+    html += '<div class="no-data">Motif tidak ditemukan di sekuens manapun</div>';
+  } else {
+    html += '<div class="motif-results">';
+    rows.forEach(r => {
+      if (r.count === 0) return;
+      const posStr = r.positions.slice(0,8).join(', ') + (r.positions.length>8?' …':'');
+      html += `<div class="motif-result-row">
+        <div class="motif-seq-id">${r.id}</div>
+        <span class="motif-count-badge">${r.count}×</span>
+        <div class="motif-positions">${posStr}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  document.getElementById('motifResults').innerHTML = html;
+}
+
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      rawRecords = parseFasta(e.target.result);
+      if (rawRecords.length === 0) { alert('No sequences found. Check FASTA format.'); return; }
+      allData = analyzeRecords(rawRecords);
+      document.getElementById('fileBadge').style.display = 'inline-flex';
+      document.getElementById('fileBadgeText').textContent = file.name + ' · ' + rawRecords.length + ' seqs';
+      document.getElementById('uploadZone').style.display = 'none';
+      document.getElementById('allTabs').style.display = 'block';
+      renderGC(allData);
+      renderHeatmap(allData);
+    } catch(err) { alert('Error: '+err.message); }
+  };
+  reader.readAsText(file);
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// File input
+const fastaInput = document.getElementById('fastaInput');
+fastaInput.addEventListener('change', e => handleFile(e.target.files[0]));
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', ()=>zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+
+// Preset chips
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    document.getElementById('motifInput').value = chip.dataset.motif;
+  });
+});
+
+// Motif search
+document.getElementById('btnSearch').addEventListener('click', ()=>{
+  const m = document.getElementById('motifInput').value.trim();
+  const s = document.getElementById('strandSelect').value;
+  if (!m) return;
+  if (!allData.length) { alert('Upload file FASTA terlebih dahulu'); return; }
+  searchMotif(m, s);
+});
+document.getElementById('motifInput').addEventListener('input', ()=>{
+  document.getElementById('motifInput').value = document.getElementById('motifInput').value.toUpperCase();
+});
+document.getElementById('motifInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') document.getElementById('btnSearch').click();
+});
+
+// CSV export
+document.getElementById('btnCSV').addEventListener('click', ()=>{
+  if (!allData.length) return;
+  const header = 'ID,Panjang (bp),A,T,C,G,GC_Content';
+  const rows = allData.map(d=>`${d.id},${d.length},${d.A},${d.T},${d.C},${d.G},${d.gc}`);
+  const csv = [header,...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='hasil_analisis_rbcl.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Similarity matrix export
+document.getElementById('btnHeatmapCSV').addEventListener('click', ()=>{
+  if (!allData.length || !simMatrix.length) return;
+  const n = simMatrix.length;
+  const subset = allData.slice(0, n);
+  const header = 'ID,'+subset.map(d=>d.id).join(',');
+  const rows = subset.map((d,i)=>d.id+','+simMatrix[i].map(v=>v.toFixed(1)).join(','));
+  const csv = [header,...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='similarity_matrix_rbcl.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Reset
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  allData=[]; rawRecords=[]; simMatrix=[];
+  if(chartInstance){chartInstance.destroy();chartInstance=null;}
+  document.getElementById('allTabs').style.display='none';
+  document.getElementById('uploadZone').style.display='block';
+  document.getElementById('fileBadge').style.display='none';
+  document.getElementById('heatmapContainer').innerHTML='<div class="no-data">Upload file FASTA terlebih dahulu</div>';
+  document.getElementById('heatmapLegend').style.display='none';
+  document.getElementById('motifResults').innerHTML='<div class="no-data">Pilih preset atau ketik motif, lalu klik search</div>';
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  fastaInput.value='';
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('.tab-content').forEach((c,i)=>c.classList.toggle('active',i===0));
+});
+</script>
+</body>
+</html>
