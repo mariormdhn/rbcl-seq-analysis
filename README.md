@@ -21,18 +21,22 @@ Pipeline analisis sekuens DNA berbasis Python untuk gen **rbcL** (*ribulose-1,5-
 
 ```
 rbcl-pipeline/
-├── pipeline_advanced.py     # Pipeline CLI utama
-├── dashboard.html           # Dashboard interaktif (buka di browser)
-├── sequence_rbcl.fasta      # Contoh file FASTA input (isi sendiri dari NCBI)
-├── laporan_mini_project.pdf # Laporan ringkas mini project
-├── README.md
-└── output/                  # Hasil analisis (dibuat otomatis saat pipeline dijalankan)
+├── data/
+   ├── sequence_rbcl.fasta    
+├── output/
     ├── hasil_analisis_rbcl.csv
     ├── similarity_matrix_rbcl.csv
     ├── motif_results_rbcl.csv
     ├── gc_content_rbcl.png
     ├── similarity_heatmap.png
     └── motif_hits.png
+├── src/
+    ├── pipline_fix.py
+├── static/
+    ├── index.html
+├── README.md
+
+    
 ```
 
 ---
